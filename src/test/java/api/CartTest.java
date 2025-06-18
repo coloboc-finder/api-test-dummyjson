@@ -1,21 +1,28 @@
 package api;
 
+import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 public class CartTest {
 
     private static final String BASE_URL = "https://dummyjson.com";
+    private static final String VALID_CART_ID = "/1";
+    private static final String INVALID_CART_ID = "/99999999999";
 
+    @BeforeAll
+    static void setup() {
+        RestAssured.baseURI = BASE_URL;
+        RestAssured.basePath = "/carts";
+    }
     @Test
-    @DisplayName("получить список корзин")
+    @DisplayName("Получить список корзин")
     public void testGetAllCarts() {
         given()
-                .baseUri(BASE_URL)
-                .basePath("/carts")
                 .contentType(ContentType.JSON)
                 .when()
                 .get()
@@ -27,27 +34,24 @@ public class CartTest {
     }
 
     @Test
-    @DisplayName("получить корзину с валидным ID")
+    @DisplayName("Получить корзину с валидным ID")
     public void testGetCartById() {
         given()
-                .baseUri("https://dummyjson.com")
-                .basePath("/carts/1")
                 .when()
-                .get()
+                .get(VALID_CART_ID)
                 .then()
                 .log().ifValidationFails()
                 .statusCode(200)
-                .body("id", equalTo(1))
+                .body("id", equalTo(VALID_CART_ID))
                 .body("products", not(empty()))
                 .body("total", notNullValue());
     }
 
     @Test
-    @DisplayName("ошибка при несуществующем ID")
+    @DisplayName("Ошибка при несуществующем ID")
     public void testGetCartByInvalidId() {
         given()
-                .baseUri("https://dummyjson.com")
-                .basePath("/carts/99999999999")
+                .basePath(INVALID_CART_ID)
                 .when()
                 .get()
                 .then()
@@ -68,12 +72,10 @@ public class CartTest {
         }
         """;
         given()
-                .baseUri("https://dummyjson.com")
-                .basePath("/carts/add")
                 .contentType(ContentType.JSON)
                 .body(requestBody)
                 .when()
-                .post()
+                .post("/add")
                 .then()
                 .log().ifValidationFails()
                 .statusCode(201)
@@ -86,7 +88,7 @@ public class CartTest {
     }
 
     @Test
-    @DisplayName("попытка добавить несуществующий товар")
+    @DisplayName("Попытка добавить несуществующий товар")
     public void testAddProductWithInvalidProductId() {
         String requestBody = """
         {
@@ -97,12 +99,10 @@ public class CartTest {
         }
         """;
         given()
-                .baseUri("https://dummyjson.com")
-                .basePath("/carts/add")
                 .contentType(ContentType.JSON)
                 .body(requestBody)
                 .when()
-                .post()
+                .post("/add")
                 .then()
                 .log().ifValidationFails()
                 .statusCode(201)
@@ -112,7 +112,7 @@ public class CartTest {
     }
 
     @Test
-    @DisplayName("слишком большое/нулевое/отрицательное количество")
+    @DisplayName("Слишком большое/нулевое/отрицательное количество")
     public void testAddProductWithInvalidQuantity() {
         String requestBody = """
         {
@@ -123,12 +123,10 @@ public class CartTest {
         }
         """;
         given()
-                .baseUri("https://dummyjson.com")
-                .basePath("/carts/add")
                 .contentType(ContentType.JSON)
                 .body(requestBody)
                 .when()
-                .post()
+                .post("/add")
                 .then()
                 .log().ifValidationFails()
                 .statusCode(404);
