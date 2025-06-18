@@ -6,7 +6,6 @@ import org.junit.jupiter.api.*;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
-import static org.awaitility.Awaitility.await;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
